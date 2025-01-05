@@ -13,14 +13,14 @@ namespace WebApplication121.Controllers
     {
 
         [HttpGet("GetData")]
-        public async Task<IActionResult> GetData(string? url)
+        public async Task<IActionResult> GetData(string? url, /*string rowscount,*/ int? pageNumber)
         {
             Console.OutputEncoding = Encoding.UTF8;
             var trendData = new List<TrendRow>();
 
             var options = new ChromeOptions();
-            options.AddArgument("--headless");
-            options.AddArgument("--disable-gpu");
+            options.AddArgument("--headless"); //  aranc chrome GUI
+            options.AddArgument("--disable-gpu");  //vor GUI chka esel petq chi
             //options.AddArgument("--no-sandbox"); //vkladkaneri isolation(ijacnuma security-n ete comment chanenq)
 
             using (IWebDriver driver = new ChromeDriver(options))
@@ -32,8 +32,26 @@ namespace WebApplication121.Controllers
 
                 driver.Navigate().GoToUrl(url);
 
-                await Task.Delay(1000);
-                //await Task.Delay(500);
+                // await Task.Delay(1000);
+                await Task.Delay(500);
+
+
+                if (pageNumber > 0)
+                {
+                    try
+                    {
+                        var button = driver.FindElement(By.CssSelector("button[aria-label='Go to next page']"));
+                        for (int i = 0; i < pageNumber; i++)
+                        {
+                            button.Click();
+                            await Task.Delay(100);
+                        }
+                    }
+                    catch (NoSuchElementException)
+                    {
+                        return BadRequest("Button was not found.");
+                    }
+                }
 
                 var rows = driver.FindElements(By.CssSelector("tbody tr"));
 
