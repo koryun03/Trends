@@ -15,5 +15,7 @@
 
         public string SvgHtml { get; set; }
 
+        public string RowsAndPagesData { get; set; }
+
     }
 }

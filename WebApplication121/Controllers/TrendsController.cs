@@ -21,7 +21,9 @@ namespace WebApplication121.Controllers
             var options = new ChromeOptions();
             options.AddArgument("--headless"); //  aranc chrome GUI
             options.AddArgument("--disable-gpu");  //vor GUI chka esel petq chi
+
             //options.AddArgument("--no-sandbox"); //vkladkaneri isolation(ijacnuma security-n ete comment chanenq)
+            // options.AddArgument("--start-maximized"); ///??????????
 
             using (IWebDriver driver = new ChromeDriver(options))
             {
@@ -32,9 +34,9 @@ namespace WebApplication121.Controllers
 
                 driver.Navigate().GoToUrl(url);
 
-                await Task.Delay(1000);
-                //await Task.Delay(500);
-
+                //await Task.Delay(1000);
+                await Task.Delay(800);
+                // WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(700));
 
                 if (pageNumber > 0)
                 {
@@ -67,7 +69,15 @@ namespace WebApplication121.Controllers
                     try
                     {
                         string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd")).FindElement(By.CssSelector("div.mZ3RIc")).Text;
-                        trendRow.Name = await TranslateToEnglishAsync(name);
+                        if (url == "https://trends.google.com/trending?geo=US&hours=24")
+                        {
+                            trendRow.Name = name;
+                        }
+                        else
+                        {
+                            trendRow.Name = await TranslateToEnglishAsync(name);
+                        }
+
                         trendRow.SearchVolume = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf")).FindElement(By.CssSelector("div.p6GDQc")).FindElement(By.CssSelector("div.lqv0Cb")).Text;
                         trendRow.Percent = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf")).FindElement(By.CssSelector("div.wqrjjc")).FindElement(By.CssSelector("div.TXt85b")).Text;
                         trendRow.StartedAt = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge")).FindElement(By.CssSelector("div.vdw3Ld")).Text;
@@ -78,6 +88,9 @@ namespace WebApplication121.Controllers
                         var svgElement = targetCell.FindElement(By.CssSelector("svg"));
                         trendRow.SvgHtml = svgElement.GetAttribute("outerHTML");
                         //trendRow.SvgHtml = svgElement.GetAttribute("outerHTML").CleanString();
+
+                        var cell = row.FindElement(By.XPath("//div[@class='enOdEe-wZVHld-gruSEe-j4LONd' and contains(@aria-label, 'of')]"));
+                        trendRow.RowsAndPagesData = cell.GetAttribute("aria-label");
                     }
                     catch (NoSuchElementException)
                     {
