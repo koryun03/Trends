@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
 using WebApplication121.Models;
 
 namespace WebApplication121.Controllers
@@ -17,13 +18,32 @@ namespace WebApplication121.Controllers
         {
             Console.OutputEncoding = Encoding.UTF8;
             var trendData = new List<TrendRow>();
+            string username = "anun_cI21zY";
+            string accessKey = "TmVASNmxTxpPRwvDQjuw";
 
             var options = new ChromeOptions();
             options.AddArgument("--headless"); //  aranc chrome GUI
             options.AddArgument("--disable-gpu");  //vor GUI chka esel petq chi
-            //options.AddArgument("--no-sandbox"); //vkladkaneri isolation(ijacnuma security-n ete comment chanenq)
+            //options.AddArgument("--no-sandbox"); //vkladkaneri isolation(ijacnuma security-n ete comment chanenq)   ChromeOptions options = new ChromeOptions();
+            options.AddAdditionalOption("bstack:options", new
+            {
+                os = "Windows",
+                osVersion = "10",
+                browserName = "Chrome",
+                browserVersion = "latest",
+                sessionName = "BrowserStack Test", // Уникальное имя сессии
+            });
 
-            using (IWebDriver driver = new ChromeDriver(options))
+            // Подключение к BrowserStack
+            //var driver = new RemoteWebDriver(
+            //    new Uri($"https://{username}:{accessKey}@hub-cloud.browserstack.com/wd/hub"),
+            //    options);
+            //using (IWebDriver driver = new ChromeDriver(options))
+
+
+            using (var driver = new RemoteWebDriver(
+                new Uri($"https://{username}:{accessKey}@hub-cloud.browserstack.com/wd/hub"),
+                options))
             {
                 if (string.IsNullOrEmpty(url))
                 {
