@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -11,11 +10,29 @@ namespace WebApplication121.Controllers
     [Route("[controller]")]
     public class TrendsController : ControllerBase
     {
+        //[HttpGet]
+        // public async Task<IActionResult> GetData([FromQuery] string? url, [FromQuery] int? pageNumber)
 
-        [HttpGet("GetData")]
-        public async Task<IActionResult> GetData(string? url, /*string rowscount,*/ int? pageNumber)
+        //    [HttpGet("{url?}/{pageNumber?}")]
+        // public async Task<IActionResult> GetData(string? url = "trending", int? pageNumber = 0)
+
+        [HttpGet("{pageNumber}")]
+        public async Task<IActionResult> GetData(int pageNumber = 0, [FromQuery] string geo = "US", [FromQuery] int hours = 24, [FromQuery] int category = 0)
         {
-            Console.OutputEncoding = Encoding.UTF8;
+            var realUrl = string.Concat("https://trends.google.com/trending?geo=", geo, "&hours=", hours);
+
+            //  Console.OutputEncoding = Encoding.UTF8;
+            if (category != 0)
+            {
+                realUrl = string.Concat("https://trends.google.com/trending?geo=", geo, "&hours=", hours, "&category=", category);
+            }
+
+            //if (string.IsNullOrEmpty(realUrl))
+            //if (realUrl == "https://trends.google.com/trending")
+            //{
+            //    // realUrl = "https://trends.google.com/trending?geo=US&hours=24";
+            //    realUrl = "https://trends.google.com/trending?geo=US&hours=24";
+            //}
             var trendData = new List<TrendRow>();
 
             var options = new ChromeOptions();
@@ -27,15 +44,10 @@ namespace WebApplication121.Controllers
 
             using (IWebDriver driver = new ChromeDriver(options))
             {
-                if (string.IsNullOrEmpty(url))
-                {
-                    url = "https://trends.google.com/trending?geo=US&hours=24";
-                }
-
-                driver.Navigate().GoToUrl(url);
+                driver.Navigate().GoToUrl(realUrl);
 
                 //await Task.Delay(1000);
-                await Task.Delay(800);
+                await Task.Delay(1000);
                 // WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(700));
 
                 if (pageNumber > 0)
@@ -69,7 +81,7 @@ namespace WebApplication121.Controllers
                     try
                     {
                         string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd")).FindElement(By.CssSelector("div.mZ3RIc")).Text;
-                        if (url == "https://trends.google.com/trending?geo=US&hours=24")
+                        if (realUrl == "https://trends.google.com/trending?geo=US&hours=24")
                         {
                             trendRow.Name = name;
                         }
