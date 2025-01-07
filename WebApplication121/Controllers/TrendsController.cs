@@ -6,7 +6,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using WebApplication121.Models;
 
-public class TrendsController : ControllerBase
+public class TrendsController : ControllerBase/*, IDisposable*/
 {
     private static IWebDriver _driver;
 
@@ -116,7 +116,7 @@ public class TrendsController : ControllerBase
         }
         catch
         {
-            return text; // Возврат оригинального текста при ошибке
+            return text;
         }
     }
 
