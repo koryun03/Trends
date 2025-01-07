@@ -1,152 +1,127 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using WebApplication121.Models;
 
-namespace WebApplication121.Controllers
+public class TrendsController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class TrendsController : ControllerBase
+    private static IWebDriver _driver;
+
+    public TrendsController()
     {
-        //[HttpGet]
-        // public async Task<IActionResult> GetData([FromQuery] string? url, [FromQuery] int? pageNumber)
-
-        //    [HttpGet("{url?}/{pageNumber?}")]
-        // public async Task<IActionResult> GetData(string? url = "trending", int? pageNumber = 0)
-
-        [HttpGet("{pageNumber}")]
-        public async Task<IActionResult> GetData(int pageNumber = 0, [FromQuery] string geo = "US", [FromQuery] int hours = 24, [FromQuery] int category = 0)
+        if (_driver == null)
         {
-            var realUrl = string.Concat("https://trends.google.com/trending?geo=", geo, "&hours=", hours);
-
-            //  Console.OutputEncoding = Encoding.UTF8;
-            if (category != 0)
-            {
-                realUrl = string.Concat("https://trends.google.com/trending?geo=", geo, "&hours=", hours, "&category=", category);
-            }
-
-            //if (string.IsNullOrEmpty(realUrl))
-            //if (realUrl == "https://trends.google.com/trending")
-            //{
-            //    // realUrl = "https://trends.google.com/trending?geo=US&hours=24";
-            //    realUrl = "https://trends.google.com/trending?geo=US&hours=24";
-            //}
-            var trendData = new List<TrendRow>();
-
             var options = new ChromeOptions();
-            options.AddArgument("--headless"); //  aranc chrome GUI
-            options.AddArgument("--disable-gpu");  //vor GUI chka esel petq chi
-
-            //options.AddArgument("--no-sandbox"); //vkladkaneri isolation(ijacnuma security-n ete comment chanenq)
-            // options.AddArgument("--start-maximized"); ///??????????
-
-            using (IWebDriver driver = new ChromeDriver(options))
-            {
-                driver.Navigate().GoToUrl(realUrl);
-
-                //await Task.Delay(1000);
-                await Task.Delay(1000);
-                // WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(700));
-
-                if (pageNumber > 0)
-                {
-                    try
-                    {
-                        var button = driver.FindElement(By.CssSelector("button[aria-label='Go to next page']"));
-                        for (int i = 0; i < pageNumber; i++)
-                        {
-                            button.Click();
-                            await Task.Delay(100);
-                        }
-                    }
-                    catch (NoSuchElementException)
-                    {
-                        return BadRequest("Button was not found.");
-                    }
-                }
-
-                var rows = driver.FindElements(By.CssSelector("tbody tr"));
-
-                //for (int i = 0; i < Math.Min(200, rows.Count); i++)
-                for (int i = 1; i < rows.Count; i++)
-                {
-                    var row = rows[i];
-
-                    var trendRow = new TrendRow { RowNumber = i };
-
-                    //var columns = row.FindElements(By.CssSelector("td"));
-
-                    try
-                    {
-                        string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd")).FindElement(By.CssSelector("div.mZ3RIc")).Text;
-                        if (realUrl == "https://trends.google.com/trending?geo=US&hours=24")
-                        {
-                            trendRow.Name = name;
-                        }
-                        else
-                        {
-                            trendRow.Name = await TranslateToEnglishAsync(name);
-                        }
-
-                        trendRow.SearchVolume = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf")).FindElement(By.CssSelector("div.p6GDQc")).FindElement(By.CssSelector("div.lqv0Cb")).Text;
-                        trendRow.Percent = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf")).FindElement(By.CssSelector("div.wqrjjc")).FindElement(By.CssSelector("div.TXt85b")).Text;
-                        trendRow.StartedAt = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge")).FindElement(By.CssSelector("div.vdw3Ld")).Text;
-                        trendRow.Status = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge")).FindElement(By.CssSelector("div.UQMqQd")).Text;
-                        //     trendRow.TrendBreakdown = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.xm9Xec")).FindElement(By.CssSelector("div.k36WW")).Text;
-
-                        var targetCell = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce"));
-                        var svgElement = targetCell.FindElement(By.CssSelector("svg"));
-                        trendRow.SvgHtml = svgElement.GetAttribute("outerHTML");
-                        //trendRow.SvgHtml = svgElement.GetAttribute("outerHTML").CleanString();
-
-                        var cell = row.FindElement(By.XPath("//div[@class='enOdEe-wZVHld-gruSEe-j4LONd' and contains(@aria-label, 'of')]"));
-                        trendRow.RowsAndPagesData = cell.GetAttribute("aria-label");
-                    }
-                    catch (NoSuchElementException)
-                    {
-                        Console.WriteLine("error");
-                    }
-
-                    trendData.Add(trendRow);
-                }
-
-                driver.Quit();
-            }
-
-            return Ok(trendData);
+            options.AddArgument("--headless");
+            options.AddArgument("--disable-gpu");
+            _driver = new ChromeDriver(options);
         }
-        private static async Task<string> TranslateToEnglishAsync(string text)
+    }
+
+    [HttpGet("{pageNumber}")]
+    public async Task<IActionResult> GetData(
+        int pageNumber = 0,
+        [FromQuery] string geo = "US",
+        [FromQuery] int hours = 24,
+        [FromQuery] int category = 0)
+    {
+        var builder = new StringBuilder($"https://trends.google.com/trending?geo={geo}&hours={hours}");
+        if (category != 0)
         {
-            const string ApiBaseUrl = "http://lingva.ml/api/v1";
+            builder.Append($"&category={category}");
+        }
+        var realUrl = builder.ToString();
 
-            using var client = new HttpClient();
+        _driver.Navigate().GoToUrl(realUrl);
 
-            // Кодируем текст для использования в URL
-            string encodedText = Uri.EscapeDataString(text);
+        var wait = new WebDriverWait(new SystemClock(), _driver, TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(500));
+        wait.Until(driver => driver.FindElements(By.CssSelector("tbody tr")).Count > 1);
 
-            // URL для перевода с автоопределением языка на английский
-            string requestUrl = $"{ApiBaseUrl}/auto/en/{encodedText}";
+        var trendData = new List<TrendRow>();
+
+        if (pageNumber > 0)
+        {
+            try
+            {
+                var button = _driver.FindElement(By.CssSelector("button[aria-label='Go to next page']"));
+                for (int i = 0; i < pageNumber; i++)
+                {
+                    button.Click();
+
+                    wait.Until(driver => driver.FindElements(By.CssSelector("tbody tr")).Count > 1);
+                }
+            }
+            catch (NoSuchElementException)
+            {
+                return BadRequest("Button was not found.");
+            }
+        }
+
+        var rows = _driver.FindElements(By.CssSelector("tbody tr"));
+
+        for (int i = 1; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            var trendRow = new TrendRow { RowNumber = i };
 
             try
             {
-                // Отправляем запрос
-                var response = await client.GetAsync(requestUrl);
-                response.EnsureSuccessStatusCode();
+                string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd"))
+                                  .FindElement(By.CssSelector("div.mZ3RIc")).Text;
+                trendRow.Name = geo == "US" ? name : await TranslateToEnglishAsync(name);
 
-                // Читаем ответ
-                var responseBody = await response.Content.ReadAsStringAsync();
-                var jsonDocument = JsonDocument.Parse(responseBody);
+                trendRow.SearchVolume = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf div.p6GDQc div.lqv0Cb")).Text;
+                trendRow.Percent = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf div.wqrjjc div.TXt85b")).Text;
+                trendRow.StartedAt = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge div.vdw3Ld")).Text;
+                trendRow.Status = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge div.UQMqQd")).Text;
 
-                // Получаем переведённый текст
-                string translatedText = jsonDocument.RootElement.GetProperty("translation").GetString();
-                return translatedText;
+                var targetCell = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce"));
+                var svgElement = targetCell.FindElement(By.CssSelector("svg"));
+                trendRow.SvgHtml = svgElement.GetAttribute("outerHTML");
+
+                var cell = row.FindElement(By.XPath("//div[@class='enOdEe-wZVHld-gruSEe-j4LONd' and contains(@aria-label, 'of')]"));
+                trendRow.RowsAndPagesData = cell.GetAttribute("aria-label");
             }
-            catch (Exception ex)
+            catch (NoSuchElementException)
             {
-                return text;
+                Console.WriteLine("Error extracting row data");
             }
+
+            trendData.Add(trendRow);
+        }
+
+        return Ok(trendData);
+    }
+    //~TrendsController()
+    //{
+    //    _driver?.Quit();
+    //}
+    private static async Task<string> TranslateToEnglishAsync(string text)
+    {
+        const string ApiBaseUrl = "http://lingva.ml/api/v1";
+        using var client = new HttpClient();
+        string encodedText = Uri.EscapeDataString(text);
+        string requestUrl = $"{ApiBaseUrl}/auto/en/{encodedText}";
+
+        try
+        {
+            var response = await client.GetAsync(requestUrl);
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var jsonDocument = JsonDocument.Parse(responseBody);
+            return jsonDocument.RootElement.GetProperty("translation").GetString();
+        }
+        catch
+        {
+            return text; // Возврат оригинального текста при ошибке
         }
     }
+
+    //public void Dispose()
+    //{
+    //    _driver?.Quit();
+    //}
 }
