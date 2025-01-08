@@ -15,11 +15,28 @@ public class TrendsController : ControllerBase/*, IDisposable*/
         if (_driver == null)
         {
             var options = new ChromeOptions();
+
+            //ete comment chi uremn disablea
+            //   options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2);        //  nkar
+            //    options.AddUserProfilePreference("profile.managed_default_content_settings.stylesheets", 2);  //  CSS
+            //   options.AddUserProfilePreference("profile.managed_default_content_settings.fonts", 2);        //  font
+            //    options.AddUserProfilePreference("profile.managed_default_content_settings.plugins", 2);      //  plagin (, Flash)
+            //    options.AddUserProfilePreference("profile.managed_default_content_settings.popups", 2);       // pop up
+            //    options.AddUserProfilePreference("profile.managed_default_content_settings.javascript", 1);   //  JavaScript 
+            //   options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2); //   (видео/аудио)
+
+            //   options.AddArgument("--disable-extensions");
+            // options.AddArgument("--disable-popup-blocking");
+            //     options.AddArgument("--disable-dev-shm-usage"); //  RAM hdd-i poxaren
+
             options.AddArgument("--headless");
             options.AddArgument("--disable-gpu");
+            //  options.AddArgument("--disable-extensions"); 
+
             _driver = new ChromeDriver(options);
         }
     }
+
 
     [HttpGet("{pageNumber}")]
     public async Task<IActionResult> GetData(
@@ -61,7 +78,7 @@ public class TrendsController : ControllerBase/*, IDisposable*/
         }
 
         var rows = _driver.FindElements(By.CssSelector("tbody tr"));
-
+        await Task.Delay(100);
         for (int i = 1; i < rows.Count; i++)
         {
             var row = rows[i];
@@ -78,7 +95,12 @@ public class TrendsController : ControllerBase/*, IDisposable*/
                 trendRow.StartedAt = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge div.vdw3Ld")).Text;
                 trendRow.Status = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.WirRge div.UQMqQd")).Text;
 
+
+                //wait.Until(d => row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce")).Text.Length > 100);//esi djvar petq ylni
+                //  wait.Until(d => row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce")) != null);
                 var targetCell = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce"));
+                // wait.Until(d => targetCell.FindElement(By.CssSelector("svg")) != null);
+                //  wait.Until(d => targetCell.FindElement(By.CssSelector("svg")).Text.Length > 100);
                 var svgElement = targetCell.FindElement(By.CssSelector("svg"));
                 trendRow.SvgHtml = svgElement.GetAttribute("outerHTML");
 
