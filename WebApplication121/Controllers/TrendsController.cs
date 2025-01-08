@@ -38,9 +38,10 @@ public class TrendsController : ControllerBase/*, IDisposable*/
     }
 
 
-    [HttpGet("{pageNumber}")]
+    [HttpGet("{pageNumber},{rowsCount}")]
     public async Task<IActionResult> GetData(
         int pageNumber = 0,
+        int rowsCount = 5,
         [FromQuery] string geo = "US",
         [FromQuery] int hours = 24,
         [FromQuery] int category = 0)
@@ -77,9 +78,16 @@ public class TrendsController : ControllerBase/*, IDisposable*/
             }
         }
 
+        int a = 1;
+        if (rowsCount > 5)
+        {
+            a = rowsCount - 5;
+        }
+
         var rows = _driver.FindElements(By.CssSelector("tbody tr"));
-        await Task.Delay(100);
-        for (int i = 1; i < rows.Count; i++)
+        await Task.Delay(200);
+        //for (int i = 1; i < rows.Count; i++)
+        for (int i = a; i < rowsCount; i++)
         {
             var row = rows[i];
             var trendRow = new TrendRow { RowNumber = i };
@@ -117,10 +125,7 @@ public class TrendsController : ControllerBase/*, IDisposable*/
 
         return Ok(trendData);
     }
-    //~TrendsController()
-    //{
-    //    _driver?.Quit();
-    //}
+
     private static async Task<string> TranslateToEnglishAsync(string text)
     {
         const string ApiBaseUrl = "http://lingva.ml/api/v1";
@@ -141,6 +146,12 @@ public class TrendsController : ControllerBase/*, IDisposable*/
             return text;
         }
     }
+
+    //~TrendsController()
+    //{
+    //    _driver?.Quit();
+    //}
+
 
     //public void Dispose()
     //{
