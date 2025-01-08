@@ -39,10 +39,9 @@ public class TrendsController : ControllerBase/*, IDisposable*/
     }
 
 
-    [HttpGet("{pageNumber},{rowsCount}")]
+    [HttpGet("{pageNumber}")]
     public async Task<IActionResult> GetData(
         int pageNumber = 0,
-        int rowsCount = 5,
         [FromQuery] string geo = "US",
         [FromQuery] int hours = 24,
         [FromQuery] int category = 0)
@@ -79,16 +78,10 @@ public class TrendsController : ControllerBase/*, IDisposable*/
             }
         }
 
-        int a = 1;
-        if (rowsCount > 5)
-        {
-            a = rowsCount - 5;
-        }
-
         var rows = _driver.FindElements(By.CssSelector("tbody tr"));
         await Task.Delay(300); ////??????????????
-        //for (int i = 1; i < rows.Count; i++)
-        for (int i = a; i < rowsCount; i++)
+        //for (int i = a; i < rowsCount; i++)
+        for (int i = 1; i < rows.Count; i++)
         {
             var row = rows[i];
             var trendRow = new TrendRow { RowNumber = i };
