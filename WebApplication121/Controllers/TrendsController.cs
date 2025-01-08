@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OpenQA.Selenium;
@@ -85,7 +86,7 @@ public class TrendsController : ControllerBase/*, IDisposable*/
         }
 
         var rows = _driver.FindElements(By.CssSelector("tbody tr"));
-        await Task.Delay(200);
+        await Task.Delay(300); ////??????????????
         //for (int i = 1; i < rows.Count; i++)
         for (int i = a; i < rowsCount; i++)
         {
@@ -114,6 +115,7 @@ public class TrendsController : ControllerBase/*, IDisposable*/
 
                 var cell = row.FindElement(By.XPath("//div[@class='enOdEe-wZVHld-gruSEe-j4LONd' and contains(@aria-label, 'of')]"));
                 trendRow.RowsAndPagesData = cell.GetAttribute("aria-label");
+                trendRow.ExploreUrl = GenerateLink(trendRow.Name, geo, hours);
             }
             catch (NoSuchElementException)
             {
@@ -124,6 +126,35 @@ public class TrendsController : ControllerBase/*, IDisposable*/
         }
 
         return Ok(trendData);
+    }
+
+    private string GenerateLink(string name, string geo, int hour)
+    {
+        string encodedName = WebUtility.UrlEncode(name);
+
+        switch (hour)
+        {
+            case 4:
+                {
+                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%204-H&geo={geo}&hl=en-US";
+                }
+            case 24:
+                {
+                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%201-d&geo={geo}&hl=en-US";
+                }
+            case 48:
+                {
+                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US";
+                }
+            case 168:
+                {
+                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US";
+                }
+            default:
+                {
+                    return "";
+                }
+        }
     }
 
     private static async Task<string> TranslateToEnglishAsync(string text)

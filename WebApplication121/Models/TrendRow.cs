@@ -16,6 +16,7 @@
         public string SvgHtml { get; set; }
 
         public string RowsAndPagesData { get; set; }
+        public string ExploreUrl { get; set; }
 
     }
 }
