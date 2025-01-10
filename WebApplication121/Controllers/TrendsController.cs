@@ -64,11 +64,14 @@ public class TrendsController : ControllerBase/*, IDisposable*/
         {
             try
             {
-                var button = _driver.FindElement(By.CssSelector("button[aria-label='Go to next page']"));
+                //  var button = _driver.FindElement(By.CssSelector("button[aria-label='Go to next page']"));
                 for (int i = 0; i < pageNumber; i++)
                 {
-                    button.Click();
+                    //button.Click();
 
+                    //wait.Until(driver => driver.FindElements(By.CssSelector("tbody tr")).Count > 1);
+                    IWebElement button = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.CssSelector("button[aria-label='Go to next page']")));
+                    button.Click();
                     wait.Until(driver => driver.FindElements(By.CssSelector("tbody tr")).Count > 1);
                 }
             }
@@ -125,29 +128,14 @@ public class TrendsController : ControllerBase/*, IDisposable*/
     {
         string encodedName = WebUtility.UrlEncode(name);
 
-        switch (hour)
+        return hour switch
         {
-            case 4:
-                {
-                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%204-H&geo={geo}&hl=en-US";
-                }
-            case 24:
-                {
-                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%201-d&geo={geo}&hl=en-US";
-                }
-            case 48:
-                {
-                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US";
-                }
-            case 168:
-                {
-                    return $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US";
-                }
-            default:
-                {
-                    return "";
-                }
-        }
+            4 => $"https://trends.google.com/trends/explore?q={encodedName}&date=now%204-H&geo={geo}&hl=en-US",
+            24 => $"https://trends.google.com/trends/explore?q={encodedName}&date=now%201-d&geo={geo}&hl=en-US",
+            48 => $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US",
+            168 => $"https://trends.google.com/trends/explore?q={encodedName}&date=now%207-d&geo={geo}&hl=en-US",
+            _ => ""
+        };
     }
 
     private static async Task<string> TranslateToEnglishAsync(string text)
