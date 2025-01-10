@@ -93,7 +93,7 @@ public class TrendsController : ControllerBase/*, IDisposable*/
             {
                 string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd"))
                                   .FindElement(By.CssSelector("div.mZ3RIc")).Text;
-                trendRow.Name = geo == "US" ? name : await TranslateToEnglishAsync(name);
+                trendRow.Name = geo == "US" || geo == "GB" ? name : await TranslateToEnglishAsync(name);
 
                 trendRow.SearchVolume = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf div.p6GDQc div.lqv0Cb")).Text;
                 trendRow.Percent = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.dQOTjf div.wqrjjc div.TXt85b")).Text;
