@@ -5,13 +5,16 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using WebApplication121.Models;
 
-public class TrendsController : ControllerBase/*, IDisposable*/
+public class TrendsController : ControllerBase
 {
+    //private readonly IWebDriver _driver;
     private static IWebDriver _driver;
+    private static HttpClient _client;
 
-    public TrendsController(IWebDriver driver)
+    public TrendsController(IWebDriver driver, HttpClient client)
     {
         _driver = driver;
+        _client = client;
     }
 
     [HttpGet("Trends")]
@@ -45,7 +48,9 @@ public class TrendsController : ControllerBase/*, IDisposable*/
             {
                 string name = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.jvkLtd"))
                                   .FindElement(By.CssSelector("div.mZ3RIc")).Text;
-                trendRow.Name = geo == "US" || geo == "GB" ? name : await TranslateToEnglishAsync(name);
+                //   trendRow.Name = geo == "US" || geo == "GB" ? name : await TranslateToEnglishAsync(name);
+                trendRow.Name = (geo[0] == 'U' && geo[1] == 'S') || (geo[0] == 'G' && geo[1] == 'B') ? name
+                    : await TranslateToEnglishAsync(name);
 
                 var targetCell = row.FindElement(By.CssSelector("td.enOdEe-wZVHld-aOtOmf.oQ5Nq.wFXHce"));
                 var svgElement = targetCell.FindElement(By.CssSelector("svg"));
@@ -80,15 +85,14 @@ public class TrendsController : ControllerBase/*, IDisposable*/
     private static async Task<string> TranslateToEnglishAsync(string text)
     {
         const string ApiBaseUrl = "http://lingva.ml/api/v1";
-        using var client = new HttpClient();
         string encodedText = Uri.EscapeDataString(text);
         string requestUrl = $"{ApiBaseUrl}/auto/en/{encodedText}";
 
         try
         {
-            var response = await client.GetAsync(requestUrl);
+            var response = await _client.GetAsync(requestUrl).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var responseBody = await response.Content.ReadAsStringAsync();
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var jsonDocument = JsonDocument.Parse(responseBody);
             return jsonDocument.RootElement.GetProperty("translation").GetString();
         }

@@ -9,8 +9,10 @@ builder.Services.AddSingleton<IWebDriver>(sp =>
     var options = new ChromeOptions();
     options.AddArgument("--headless");
     options.AddArgument("--disable-gpu");
+
     return new ChromeDriver(options);
 });
+builder.Services.AddSingleton<HttpClient>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
