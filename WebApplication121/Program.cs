@@ -1,7 +1,16 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddSingleton<IWebDriver>(sp =>
+{
+    var options = new ChromeOptions();
+    options.AddArgument("--headless");
+    options.AddArgument("--disable-gpu");
+    return new ChromeDriver(options);
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
