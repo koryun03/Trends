@@ -36,11 +36,11 @@ namespace WebApplication121.Services
                     TrendContext.Instance.AddRange("trend24", trends24h);
 
                     TrendContext.Instance.Remove("trend7");
-                    List<TrendRow> trends7h = await _trendService.GenerateTrendData("US", 24, 0);
+                    List<TrendRow> trends7h = await _trendService.GenerateTrendData("US", 168, 0);
                     TrendContext.Instance.AddRange("trend7", trends7h);
 
                     TrendContext.Instance.Remove("trend48");
-                    List<TrendRow> trends48h = await _trendService.GenerateTrendData("US", 24, 0);
+                    List<TrendRow> trends48h = await _trendService.GenerateTrendData("US", 48, 0);
                     TrendContext.Instance.AddRange("trend48", trends48h);
 
                     _logger.LogInformation("Data update completed successfully." + DateTime.UtcNow);
