@@ -22,7 +22,7 @@ namespace WebApplication121.Services
             {
                 try
                 {
-                    _logger.LogInformation("Starting data update...");
+                    _logger.LogInformation("Starting data update..." + DateTime.UtcNow);
 
                     using var scope = _serviceScopeFactory.CreateScope();
                     var _trendService = scope.ServiceProvider.GetRequiredService<ITrendService>();
@@ -43,11 +43,11 @@ namespace WebApplication121.Services
                     List<TrendRow> trends48h = await _trendService.GenerateTrendData("US", 24, 0);
                     TrendContext.Instance.AddRange("trend48", trends48h);
 
-                    _logger.LogInformation("Data update completed successfully.");
+                    _logger.LogInformation("Data update completed successfully." + DateTime.UtcNow);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "An error occurred while updating data.");
+                    _logger.LogError(ex, "An error occurred while updating data." + DateTime.UtcNow);
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
