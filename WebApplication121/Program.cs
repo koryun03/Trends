@@ -17,8 +17,8 @@ builder.Services.AddSingleton<IWebDriver>(sp =>
 });
 builder.Services.AddSingleton<HttpClient>();
 builder.Services.AddSingleton<TrendContext>(TrendContext.Instance);
-//builder.Services.AddScoped<ITrendService, TrendService>();
-builder.Services.AddSingleton<ITrendService, TrendService>();
+builder.Services.AddScoped<ITrendService, TrendService>();
+//builder.Services.AddSingleton<ITrendService, TrendService>();
 builder.Services.AddHostedService<SchedulerJobService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

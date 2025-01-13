@@ -7,11 +7,11 @@ namespace WebApplication121.Services
     public class SchedulerJobService : BackgroundService
     {
         private readonly ILogger<SchedulerJobService> _logger;
-        private readonly ITrendService _trendService;
-        public SchedulerJobService(ILogger<SchedulerJobService> logger, ITrendService trendsService)
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        public SchedulerJobService(ILogger<SchedulerJobService> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
-            _trendService = trendsService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,6 +23,9 @@ namespace WebApplication121.Services
                 try
                 {
                     _logger.LogInformation("Starting data update...");
+
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var _trendService = scope.ServiceProvider.GetRequiredService<ITrendService>();
 
                     TrendContext.Instance.Remove("trend4");
                     List<TrendRow> trends4h = await _trendService.GenerateTrendData("US", 4, 0);
